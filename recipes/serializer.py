@@ -19,7 +19,12 @@ class CategorySerializer(serializers.ModelSerializer):
 class AuthorSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'first_name', 'last_name', 'username']
+        extra_kwargs = {
+            'email': {
+                'write_only': True
+            }
+        }
+        fields = ['id', 'first_name', 'last_name', 'username', 'email']
 
 
 
