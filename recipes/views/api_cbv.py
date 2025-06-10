@@ -1,4 +1,4 @@
-from rest_framework.views import APIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.response import Response
 from rest_framework import status
 
@@ -6,26 +6,14 @@ from ..models import Recipe, Category, Tag
 from ..serializer import RecipesSerializer, CategorySerializer, TagSerializer
 
 
-class RecipesListView(APIView):
-    def get(self, request):
-        recipes = Recipe.objects.select_related(
-            'category', 'author'
-        ).prefetch_related(
-            'tags'
-        ).all().order_by('id')
-
-        serializer = RecipesSerializer(instance=recipes, many=True)
-        return Response(serializer.data)
-
-    def post(self, request):
-        serializer = RecipesSerializer(data=request.data)
-
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
+class RecipesListView(ListCreateAPIView):
+    queryset = Recipe.objects.select_related(
+        'category', 'author').prefetch_related(
+        'tags').all().order_by('id')
+    serializer_class = RecipesSerializer
     
 
-class RecipeDetailView(APIView):
+class RecipeDetailView(RetrieveUpdateDestroyAPIView):
     def get_recipe(self, pk):
         recipe = Recipe.objects.select_related(
             'category', 'author'
