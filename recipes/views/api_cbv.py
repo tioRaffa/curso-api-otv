@@ -14,35 +14,9 @@ class RecipesListView(ListCreateAPIView):
     
 
 class RecipeDetailView(RetrieveUpdateDestroyAPIView):
-    def get_recipe(self, pk):
-        recipe = Recipe.objects.select_related(
-            'category', 'author'
-        ).prefetch_related(
-            'tags'
-        ).filter(
-            pk=pk
-        ).first()
-
-        return recipe
+    queryset = Recipe.objects.select_related(
+        'category', 'author'
+    ).prefetch_related('tags').all()
     
-    def get(self, request, pk):
-        recipe = self.get_recipe(pk=pk)
-        serializer = RecipesSerializer(instance=recipe)
-        return Response(serializer.data)
-    
-    def patch(self, request, pk):
-        recipe = self.get_recipe(pk=pk)
-        serializer = RecipesSerializer(
-            instance=recipe,
-            data=request.data,
-            partial=True
-        )
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
-    
-    def delete(self, request, pk):
-        recipe = self.get_recipe(pk=pk)
-        recipe.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    serializer_class = RecipesSerializer
 
