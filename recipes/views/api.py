@@ -9,7 +9,6 @@ from django.shortcuts import get_object_or_404
 
 
 
-
 @api_view(http_method_names=['get', 'post'])
 def recipe_api_list(request):
 
@@ -28,12 +27,16 @@ def recipe_api_list(request):
         serializer = RecipesSerializer(data=request.data)
 
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        
+        if request.user.is_authenticated:
+            serializer.save(author=request.user)
+        else:
+            serializer.save()
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-@api_view(http_method_names=['get'])
+@api_view(http_method_names=['get', 'patch', 'delete'])
 def recipe_api_detail(request, pk):
 
     recipe = Recipe.objects.select_related(
@@ -44,8 +47,24 @@ def recipe_api_detail(request, pk):
         pk=pk
     ).first()
 
-    serializer = RecipesSerializer(instance=recipe)
-    return Response(serializer.data)
+    if request.method == 'GET':
+        serializer = RecipesSerializer(instance=recipe)
+        return Response(serializer.data)
+    
+    elif request.method == 'PATCH':
+        serializer = RecipesSerializer(
+            instance=recipe, 
+            data=request.data, 
+            partial=True, 
+            )
+        
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_206_PARTIAL_CONTENT)
+
+    elif request.method == 'DELETE':
+        recipe.delete()
+        return Response(status=status.HTTP_418_IM_A_TEAPOT)
 
 
 

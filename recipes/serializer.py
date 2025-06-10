@@ -59,3 +59,12 @@ class RecipesSerializer(serializers.ModelSerializer):
             'author',   
             'tags',     
         ]
+    
+    def validate(self, attrs):
+        if self.instance is not None and attrs.get('servings') is None:
+            attrs['servings'] = self.instance.servings
+        
+        if self.instance is not None and attrs.get('preparation_time') is None:
+            attrs['preparation_time'] = self.instance.preparation_time
+
+        return super().validate(attrs)
