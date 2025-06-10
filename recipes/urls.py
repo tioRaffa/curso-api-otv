@@ -55,5 +55,11 @@ urlpatterns = [
         views.recipe_api_detail,
         name="recipe-detail-api-v2",
     ),
+    path(
+        "api/v2/categories/",
+        views.category_api_list,
+        name="category-list-api-v2"
+    ),
+    
     
 ]
