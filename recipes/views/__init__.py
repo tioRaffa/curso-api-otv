@@ -1,2 +1,3 @@
 from .site import * 
-from .api import *
+from .api_fbv import *
+from .api_cbv import *
