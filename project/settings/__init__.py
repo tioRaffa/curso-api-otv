@@ -11,3 +11,5 @@ from .security import *
 from .templates import *
 
 from .debug_toolbar import *  # isort:skip
+
+from .api_rest import * # isort:skip
