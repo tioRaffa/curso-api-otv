@@ -4,7 +4,7 @@ from ..models import Recipe
 from ..serializer import RecipesSerializer
 
 
-class RecipesAPiListViewSet(ModelViewSet):
+class RecipesApiV2ViewSet(ModelViewSet):
     queryset = Recipe.objects.select_related(
         'author', 'category'
     ).prefetch_related(
