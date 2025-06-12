@@ -1,11 +1,11 @@
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 from ..models import Recipe
 from ..serializer import RecipesSerializer
 
 from ..permissions import IsOwnerOrReadOnly
 from django.shortcuts import get_object_or_404
+
 
 class RecipesApiV2ViewSet(ModelViewSet):
 
@@ -14,7 +14,6 @@ class RecipesApiV2ViewSet(ModelViewSet):
         ).prefetch_related(
         'tags'
         ).all()
-
     serializer_class = RecipesSerializer
     permission_classes = [IsOwnerOrReadOnly, ]
 

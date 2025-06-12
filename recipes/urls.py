@@ -11,8 +11,8 @@ from rest_framework_simplejwt.views import (
 
 app_name = 'recipes'
 
-router = SimpleRouter()
-router.register('recipes', views.RecipesApiV2ViewSet)
+router_recipes = SimpleRouter()
+router_recipes.register('recipes', views.RecipesApiV2ViewSet)
 
 urlpatterns = [
     path(
@@ -75,4 +75,4 @@ urlpatterns = [
 ]
 
 # ROUTER ViewSet API
-urlpatterns += router.urls
+urlpatterns += router_recipes.urls

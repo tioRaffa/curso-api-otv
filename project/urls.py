@@ -18,14 +18,16 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
-from recipes.urls import router
+from recipes.urls import router_recipes
+from authors.urls import router_author
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('recipes.urls')),
     path('authors/', include('authors.urls')),
     path('__debug__/', include('debug_toolbar.urls')),
-    path('api/v2/', include(router.urls)),
+    path('api/v2/', include(router_recipes.urls)),
+    path('api/v2/', include(router_author.urls)),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
