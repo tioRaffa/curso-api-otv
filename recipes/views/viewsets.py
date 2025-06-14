@@ -13,13 +13,14 @@ class RecipesApiV2ViewSet(ModelViewSet):
         'author', 'category'
         ).prefetch_related(
         'tags'
-        ).all()
+        ).all().order_by('id')
     serializer_class = RecipesSerializer
     permission_classes = [IsOwnerOrReadOnly, ]
 
 
     def get_queryset(self):
         qs = super().get_queryset()
+        qs = qs.filter(is_published=True)
 
         uri_category_id = self.request.query_params.get('category_id', '')
 

@@ -1,6 +1,46 @@
 from rest_framework import test
 from recipes.tests.test_recipe_base import RecipeMixin
+from django.urls import reverse
 
 class RecipeAPIv2Test(test.APITestCase, RecipeMixin):
-    def test_the_test(self):
-        assert 1 == 1
+    def get_recipe_list(self):
+        api_url = reverse('recipes:recipes-api-list') + '?page=1'
+        response = self.client.get(api_url)
+        return response
+    
+
+    def test_recipe_api_list_returns_status_code_200(self):
+        response = self.get_recipe_list()
+        self.assertEqual(
+            response.status_code,
+            200
+        )
+
+    def test_recipe_api_list_loads_correct_number_of_recipes(self):
+        wanted_numbers_of_recipes = 3
+        self.make_recipe_in_batch(qtd=wanted_numbers_of_recipes)
+
+        response = self.get_recipe_list()
+
+        qtd_of_recipes_load = len(response.data.get('results'))
+
+        self.assertEqual(
+            wanted_numbers_of_recipes,
+            qtd_of_recipes_load
+        )
+
+    def test_recipe_api_list_do_not_show_not_published_recipes(self):
+        recipes = self.make_recipe_in_batch(qtd=2)
+
+        recipe_not_published = recipes[0]
+        recipe_not_published.is_published = False
+        recipe_not_published.save()
+
+        response = self.get_recipe_list()
+        
+        self.assertEqual(
+            len(response.data.get('results')),
+            1
+        )
+
+        
