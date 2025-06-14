@@ -79,4 +79,22 @@ class RecipeAPIv2Test(test.APITestCase, RecipeMixin):
             recipe_wanted.title
         )
 
+    
+    def test_recipe_api_list_user_must_send_jwt_token_to_create_recipe(self):
+        api_url = reverse('recipes:recipes-api-list')
+        recipe_data = {
+            'title': 'Minha Receita de Teste',
+            'description': 'Uma descrição qualquer.',
+            'preparation_time': 10,
+            'preparation_time_unit': 'Minutos',
+            'servings': 2,
+            'servings_unit': 'Porções',
+            'preparation_steps': 'Faça isso e aquilo.',
+            }
         
+        response = self.client.post(api_url, data=recipe_data)
+
+        self.assertEqual(
+            response.status_code,
+            401
+        )
