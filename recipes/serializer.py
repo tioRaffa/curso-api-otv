@@ -68,3 +68,8 @@ class RecipesSerializer(serializers.ModelSerializer):
             attrs['preparation_time'] = self.instance.preparation_time
 
         return super().validate(attrs)
+    
+    def validate_preparation_time(self, value):
+        if value < 0:
+            raise serializers.ValidationError("preparation_time deve ser um número positivo.")
+        return value
