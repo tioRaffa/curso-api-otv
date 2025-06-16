@@ -1,8 +1,8 @@
 from rest_framework import test
-from recipes.tests.test_recipe_base import RecipeMixin
+from recipes.tests.test_recipe_base import RecipeMixin, RecipeAPIv2TestMixin
 
 
-class RecipeAPIv2Test(test.APITestCase, RecipeMixin):
+class RecipeAPIv2Test(test.APITestCase, RecipeMixin, RecipeAPIv2TestMixin):
 
     def test_recipe_api_list_returns_status_code_200(self):
         response = self.get_recipe_list(string='?page=1')
@@ -81,19 +81,16 @@ class RecipeAPIv2Test(test.APITestCase, RecipeMixin):
             401
         )
 
-    def test_jwt_login(self):
+    def test_recipe_api_does_not_accept_negative_numbers(self):
         data = self.create_simple_recipe()
         data['preparation_time'] = -10
-
-        api_url = self.get_api_url()
+       
         access = self.get_jwt_token(access=True)
-
         response = self.client.post(
-            api_url,
+            self.get_api_url(),
             data=data,
             HTTP_AUTHORIZATION=f'Bearer {access}'
         )
-
         self.assertEqual(
             response.status_code,
             400
@@ -101,4 +98,17 @@ class RecipeAPIv2Test(test.APITestCase, RecipeMixin):
         self.assertEqual(
             response.data.get('preparation_time')[0],
             'preparation_time deve ser um número positivo.'
+        )
+
+    def test_recipe_api_list_logged_user_can_create_a_recipe(self):
+        data = self.create_simple_recipe()
+        access = self.get_jwt_token(access=True)
+        response = self.client.post(
+            self.get_api_url(),
+            data=data,
+            HTTP_AUTHORIZATION=F'Bearer {access}'
+        )
+        self.assertEqual(
+            response.status_code,
+            201
         )

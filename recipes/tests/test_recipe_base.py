@@ -70,7 +70,14 @@ class RecipeMixin:
             recipe = self.make_recipe(**kwargs)
             recipes.append(recipe)
         return recipes
-    
+
+
+class RecipeTestBase(TestCase, RecipeMixin):
+    def setUp(self) -> None:
+        return super().setUp()
+
+
+class RecipeAPIv2TestMixin:
     def create_simple_recipe(self):
         data = {
             'title': 'Minha Receita de Teste',
@@ -121,8 +128,3 @@ class RecipeMixin:
             return response.data('refresh')
         
         return response
-
-
-class RecipeTestBase(TestCase, RecipeMixin):
-    def setUp(self) -> None:
-        return super().setUp()
