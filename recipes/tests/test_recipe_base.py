@@ -77,7 +77,7 @@ class RecipeTestBase(TestCase, RecipeMixin):
         return super().setUp()
 
 
-class RecipeAPIv2TestMixin:
+class RecipeAPIv2TestMixin(RecipeMixin):
     def create_simple_recipe(self):
         data = {
             'title': 'Minha Receita de Teste',
@@ -90,7 +90,7 @@ class RecipeAPIv2TestMixin:
             }
         return data
 
-    def get_api_url(self, url=None):
+    def get_recipe_api_url(self, url=None):
         if url is not None:
             url_api = reverse(f'{url}')
         else:
@@ -107,12 +107,13 @@ class RecipeAPIv2TestMixin:
         response = self.client.get(api_url)
         return response
     
-    def get_jwt_token(self, access=False, refresh=False):
+    
+    def get_jwt_token_author(self, username='Pintudinho'):
         user_data = {
-            'username': 'user',
-            'password': '123'
+            'username': username,
+            'password': 'password'
         }
-        self.make_author(
+        user = self.make_author(
             username=user_data.get('username'),
             password=user_data.get('password')
         )
@@ -122,9 +123,10 @@ class RecipeAPIv2TestMixin:
             url_api, 
             data={**user_data}
         )
-        if access:
-            return response.data.get('access')
-        if refresh:
-            return response.data('refresh')
+        data = {
+            'jwt_token_access': response.data.get('access'),
+            'jwt_token_refresh': response.data.get('refresh'),
+            'user': user
+        }
         
-        return response
+        return data

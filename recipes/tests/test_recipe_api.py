@@ -1,8 +1,9 @@
 from rest_framework import test
-from recipes.tests.test_recipe_base import RecipeMixin, RecipeAPIv2TestMixin
+from recipes.tests.test_recipe_base import RecipeAPIv2TestMixin
+from django.urls import reverse
 
 
-class RecipeAPIv2Test(test.APITestCase, RecipeMixin, RecipeAPIv2TestMixin):
+class RecipeAPIv2Test(test.APITestCase, RecipeAPIv2TestMixin):
 
     def test_recipe_api_list_returns_status_code_200(self):
         response = self.get_recipe_list(string='?page=1')
@@ -71,7 +72,7 @@ class RecipeAPIv2Test(test.APITestCase, RecipeMixin, RecipeAPIv2TestMixin):
 
     
     def test_recipe_api_list_user_must_send_jwt_token_to_create_recipe(self):
-        api_url = self.get_api_url()
+        api_url = self.get_recipe_api_url()
         recipe_data = self.create_simple_recipe()
         
         response = self.client.post(api_url, data=recipe_data)
@@ -82,13 +83,14 @@ class RecipeAPIv2Test(test.APITestCase, RecipeMixin, RecipeAPIv2TestMixin):
         )
 
     def test_recipe_api_does_not_accept_negative_numbers(self):
-        data = self.create_simple_recipe()
-        data['preparation_time'] = -10
+        recipe_data = self.create_simple_recipe()
+        recipe_data['preparation_time'] = -10
        
-        access = self.get_jwt_token(access=True)
+        token = self.get_jwt_token_author()
+        access = token['jwt_token_access']
         response = self.client.post(
-            self.get_api_url(),
-            data=data,
+            self.get_recipe_api_url(),
+            data=recipe_data,
             HTTP_AUTHORIZATION=f'Bearer {access}'
         )
         self.assertEqual(
@@ -101,14 +103,52 @@ class RecipeAPIv2Test(test.APITestCase, RecipeMixin, RecipeAPIv2TestMixin):
         )
 
     def test_recipe_api_list_logged_user_can_create_a_recipe(self):
-        data = self.create_simple_recipe()
-        access = self.get_jwt_token(access=True)
+        recipe_data = self.create_simple_recipe()
+        token = self.get_jwt_token_author()
+        access = token['jwt_token_access']
+
         response = self.client.post(
-            self.get_api_url(),
-            data=data,
-            HTTP_AUTHORIZATION=F'Bearer {access}'
+            self.get_recipe_api_url(),
+            data=recipe_data,
+            HTTP_AUTHORIZATION=f'Bearer {access}'
         )
         self.assertEqual(
             response.status_code,
             201
+        )
+
+    def test_recipe_api_list_logged_user_can_update_a_recipe(self):
+        recipe = self.make_recipe()
+
+        jwt_data = self.get_jwt_token_author()
+        token_access = jwt_data.get('jwt_token_access')
+
+        author = jwt_data.get('user')
+        recipe.author = author
+        recipe.save()
+        url_api = reverse('recipes:recipes-api-detail', args=(recipe.id,))
+
+        modified_title = f'Modificação feita pelo user: {author.username}'
+
+
+        response = self.client.patch(
+            url_api,
+            HTTP_AUTHORIZATION=f'Bearer {token_access}',
+            data={
+                'title': modified_title
+            },
+        )
+
+
+        self.assertEqual(
+            response.data.get('title'),
+            modified_title
+        )
+        self.assertEqual(
+            response.data['author']['id'],
+            author.id
+        )
+        self.assertEqual(
+            response.status_code,
+            200
         )

@@ -168,7 +168,7 @@ class RecipeListViewSearch(RecipeListViewBase):
         return ctx
 
 
-class RecipeDetail(DetailView):
+class RecipeDetail1(DetailView):
     model = Recipe
     context_object_name = 'recipe'
     template_name = 'recipes/pages/recipe-view.html'
@@ -188,7 +188,7 @@ class RecipeDetail(DetailView):
         return ctx
 
 
-class RecipeDetailAPI(RecipeDetail):
+class RecipeDetailAPI(RecipeDetail1):
     def render_to_response(self, context, **response_kwargs):
         recipe = self.get_context_data()['recipe']
         recipe_dict = model_to_dict(recipe)
