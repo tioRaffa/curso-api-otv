@@ -1,46 +1,8 @@
 from rest_framework import test
 from recipes.tests.test_recipe_base import RecipeMixin
-from django.urls import reverse
+
 
 class RecipeAPIv2Test(test.APITestCase, RecipeMixin):
-    def get_api_url(self, url=None):
-        if url is not None:
-            url_api = reverse(f'{url}')
-        else:
-            url_api = reverse('recipes:recipes-api-list')
-        return url_api        
-
-    def get_recipe_list(self, string=None):
-        
-        if string is not None:
-            api_url = reverse('recipes:recipes-api-list') + f'{string}'
-        else:
-            api_url = reverse('recipes:recipes-api-list')
-
-        response = self.client.get(api_url)
-        return response
-    
-    def get_jwt_token(self, access=False, refresh=False):
-        user_data = {
-            'username': 'user',
-            'password': '123'
-        }
-        self.make_author(
-            username=user_data.get('username'),
-            password=user_data.get('password')
-        )
-        url_api = reverse('recipes:token_obtain_pair')
-        
-        response = self.client.post(
-            url_api, 
-            data={**user_data}
-        )
-        if access:
-            return response.data.get('access')
-        if refresh:
-            return response.data('refresh')
-        
-        return response
 
     def test_recipe_api_list_returns_status_code_200(self):
         response = self.get_recipe_list(string='?page=1')
@@ -109,16 +71,8 @@ class RecipeAPIv2Test(test.APITestCase, RecipeMixin):
 
     
     def test_recipe_api_list_user_must_send_jwt_token_to_create_recipe(self):
-        api_url = reverse('recipes:recipes-api-list')
-        recipe_data = {
-            'title': 'Minha Receita de Teste',
-            'description': 'Uma descrição qualquer.',
-            'preparation_time': 10,
-            'preparation_time_unit': 'Minutos',
-            'servings': 2,
-            'servings_unit': 'Porções',
-            'preparation_steps': 'Faça isso e aquilo.',
-            }
+        api_url = self.get_api_url()
+        recipe_data = self.create_simple_recipe()
         
         response = self.client.post(api_url, data=recipe_data)
 
@@ -128,15 +82,7 @@ class RecipeAPIv2Test(test.APITestCase, RecipeMixin):
         )
 
     def test_jwt_login(self):
-        data = {
-            'title': 'teste',
-            'description': 'teste',
-            'preparation_time': 1,
-            'preparation_time_unit': 'teste',
-            'servings': 1,
-            'servings_unit': 'test',
-            'preparation_steps': 'bla'
-        }
+        data = self.create_simple_recipe()
         data['preparation_time'] = -10
 
         api_url = self.get_api_url()
@@ -147,7 +93,6 @@ class RecipeAPIv2Test(test.APITestCase, RecipeMixin):
             data=data,
             HTTP_AUTHORIZATION=f'Bearer {access}'
         )
-        print(response.data)
 
         self.assertEqual(
             response.status_code,

@@ -1,5 +1,6 @@
 from django.test import TestCase
 from recipes.models import Category, Recipe, User
+from django.urls import reverse
 
 
 class RecipeMixin:
@@ -69,6 +70,57 @@ class RecipeMixin:
             recipe = self.make_recipe(**kwargs)
             recipes.append(recipe)
         return recipes
+    
+    def create_simple_recipe(self):
+        data = {
+            'title': 'Minha Receita de Teste',
+            'description': 'Uma descrição qualquer.',
+            'preparation_time': 10,
+            'preparation_time_unit': 'Minutos',
+            'servings': 2,
+            'servings_unit': 'Porções',
+            'preparation_steps': 'Faça isso e aquilo.',
+            }
+        return data
+
+    def get_api_url(self, url=None):
+        if url is not None:
+            url_api = reverse(f'{url}')
+        else:
+            url_api = reverse('recipes:recipes-api-list')
+        return url_api        
+
+    def get_recipe_list(self, string=None):
+        
+        if string is not None:
+            api_url = reverse('recipes:recipes-api-list') + f'{string}'
+        else:
+            api_url = reverse('recipes:recipes-api-list')
+
+        response = self.client.get(api_url)
+        return response
+    
+    def get_jwt_token(self, access=False, refresh=False):
+        user_data = {
+            'username': 'user',
+            'password': '123'
+        }
+        self.make_author(
+            username=user_data.get('username'),
+            password=user_data.get('password')
+        )
+        url_api = reverse('recipes:token_obtain_pair')
+        
+        response = self.client.post(
+            url_api, 
+            data={**user_data}
+        )
+        if access:
+            return response.data.get('access')
+        if refresh:
+            return response.data('refresh')
+        
+        return response
 
 
 class RecipeTestBase(TestCase, RecipeMixin):
